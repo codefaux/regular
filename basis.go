@@ -4,8 +4,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"time"
-
-	"github.com/adrg/xdg"
 )
 
 const (
@@ -58,8 +56,9 @@ const (
 )
 
 var (
-	defaultConfigRoot = filepath.Join(xdg.ConfigHome, dirName)
-	defaultStateRoot  = filepath.Join(xdg.StateHome, dirName)
+	defaultConfigRoot = filepath.Join("/etc", dirName)
+	defaultStateRoot  = filepath.Join("/var/lib", dirName)
+	defaultLogRoot    = filepath.Join("/var/log", dirName)
 )
 
 type Config struct {
