@@ -3,6 +3,8 @@
 > [!WARNING]
 > **This project is in early development.**\
 > It is not ready for others to use.
+> I (@codefaux) have made simple hacks to tweak this to my needs.
+> Most code and all ownership/copyright/authorship references are unchanged.
 
 **Regular** is a job scheduler like [cron](https://en.wikipedia.org/wiki/Cron) and [anacron](https://en.wikipedia.org/wiki/Anacron).
 
@@ -19,11 +21,9 @@
 
 ## Installation
 
-You will need Go 1.22 or later:
+You will need Go 1.22 or later.
 
-```shell
-go install dbohdan.com/regular@latest
-```
+Pull the repo, run systemd/install.sh
 
 ## Configuration
 
