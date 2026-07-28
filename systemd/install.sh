@@ -23,4 +23,5 @@ install "$service_file" "${systemd_dir}/${service_file}"
 
 echo "Reloading systemd, enabling and starting regular"
 systemctl daemon-reload
-systemctl enable "$service_file" --now
+systemctl enable "$service_file"
+systemctl restart "$service_file"
