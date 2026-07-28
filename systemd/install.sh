@@ -4,6 +4,12 @@ set -eu
 systemd_dir=/etc/systemd/system
 service_file=regular.service
 
+if ! command -v go >/dev/null 2>&1; then
+    echo "Error: 'go' is not installed or is not in your PATH." >&2
+    echo "Please install Go and ensure the 'go' executable is in your PATH." >&2
+    exit 1
+fi
+
 cd "$(dirname "$0")"
 
 echo "Building regular with go"
