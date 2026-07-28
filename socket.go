@@ -21,8 +21,8 @@ func defaultSocketPath() (string, error) {
 
 	candidates = append(
 		candidates,
-		filepath.Join("/run", appSocketFileName),
-		filepath.Join("/var/run", appSocketFileName),
+		"/run",
+		"/var/run",
 	)
 
 	var runtimeDir string
