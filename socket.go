@@ -4,9 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/user"
 	"path/filepath"
-	"runtime"
 	"syscall"
 )
 
@@ -19,11 +17,6 @@ func defaultSocketPath() (string, error) {
 		return envPath, nil
 	}
 
-	currentUser, err := user.Current()
-	if err != nil {
-		return "", fmt.Errorf("failed to get current user: %w", err)
-	}
-
 	hostname, err := os.Hostname()
 	if err != nil {
 		return "", fmt.Errorf("failed to get hostname: %w", err)
@@ -32,18 +25,10 @@ func defaultSocketPath() (string, error) {
 	candidates := []string{}
 	subdir := dirName
 
-	if envDir := os.Getenv("XDG_RUNTIME_DIR"); envDir != "" {
-		candidates = append(candidates, envDir)
-	}
-
-	if runtime.GOOS == "freebsd" {
-		candidates = append(candidates, filepath.Join("/var/run/xdg", currentUser.Username))
-	}
-
 	candidates = append(
 		candidates,
-		filepath.Join("/run/user", currentUser.Uid),
-		filepath.Join("/var/run/user", currentUser.Uid),
+		filepath.Join("/run", dirName),
+		filepath.Join("/var/run", dirName),
 	)
 
 	var runtimeDir string
@@ -56,7 +41,7 @@ func defaultSocketPath() (string, error) {
 
 	if runtimeDir == "" {
 		runtimeDir = os.TempDir()
-		subdir = dirName + "-" + currentUser.Username + "@" + hostname
+		subdir = dirName + "-" + dirName + "@" + hostname
 	}
 
 	return filepath.Join(runtimeDir, subdir, appSocketFileName), nil
