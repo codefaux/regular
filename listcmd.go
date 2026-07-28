@@ -7,6 +7,7 @@ import (
 )
 
 func (l *ListCmd) Run(config Config) error {
+	fmt.Println("Listing jobs:")
 	entries, err := os.ReadDir(config.ConfigRoot)
 	if err != nil {
 		return fmt.Errorf("failed to read config directory: %w", err)

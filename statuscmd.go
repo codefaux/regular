@@ -44,6 +44,8 @@ func (s *StatusCmd) Run(config Config) error {
 	}
 	defer db.close()
 
+	fmt.Println("Job status:")
+
 	secret := regexp.MustCompile(secretRegexp)
 
 	seenNames := make(map[string]struct{})
