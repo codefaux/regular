@@ -5,6 +5,8 @@
 > It is not ready for others to use.
 > I (@codefaux) have made simple hacks to tweak this to my needs.
 > Most code and all ownership/copyright/authorship references are unchanged.
+> Much of the documentation may refer to user-specific service/installation
+> and is incorrect.
 
 **Regular** is a job scheduler like [cron](https://en.wikipedia.org/wiki/Cron) and [anacron](https://en.wikipedia.org/wiki/Anacron).
 
@@ -116,22 +118,22 @@ List available jobs:
 
 Default paths (override with **-c** and **-s**):
 
-- Config: `~/.config/regular/`
-  - Global environment: `~/.config/regular/global.env`
-  - Job config: `~/.config/regular/<job>/config.star`
-  - Job environment: `~/.config/regular/<job>/job.env`
-  - Job executable (script): `~/.config/regular/<job>/job`
+- Config: `/etc/regular/`
+  - Global environment: `/etc/regular/global.env`
+  - Job config: `/etc/regular/<job>/config.star`
+  - Job environment: `/etc/regular/<job>/job.env`
+  - Job executable (script): `/etc/regular/<job>/job`
 
-- State: `~/.local/state/regular/`
-  - App log: `~/.local/state/regular/app.log`
-  - Database: `~/.local/state/regular/state.sqlite3`
-  - Lock file: `~/.local/state/regular/app.lock`.
+- State: `/var/lib/regular/regular/`
+  - App log: `/var/lib/regular/regular/app.log`
+  - Database: `/var/lib/regular/regular/state.sqlite3`
+  - Lock file: `/var/lib/regular/regular/app.lock`.
     When in use, this file prevents multiple instances of `regular start` from running at the same time.
     `regular run` also takes this lock when no daemon is running.
-  - Logs for the latest job: `~/.local/state/regular/<job>/{stdout,stderr}.log`.
+  - Logs for the latest job: `/var/lib/regular/regular/<job>/{stdout,stderr}.log`.
     These logs and earlier logs are also stored in the database.
 
-- Daemon socket: `$XDG_RUNTIME_DIR/regular/socket` (or, with no runtime dir, a per-user subdir under `$TMPDIR`).
+- Daemon socket: `/var/run/regular/socket` or `/run/regular/socket` (or, with no runtime dir, a subdir under `$TMPDIR`).
   Set `REGULAR_SOCK` to override.
   The socket is created with mode `0600` and the client refuses to connect to one owned by another user.
 
@@ -145,8 +147,7 @@ All files and directories are created with 0600 and 0700 permissions respectivel
 
 ## systemd service
 
-Regular's repository includes a systemd unit file for running the scheduler automatically as your user.
-Installation requires replacing `%USER%` with your username.
+Regular's repository includes a systemd unit file for running the scheduler automatically.
 
 To install and enable the service, clone the repository, then run:
 
@@ -158,20 +159,22 @@ cd systemd/
 
 This will:
 
-- Create a service file in `~/.config/systemd/user/`
+- Build the binary using go
+- Install the binary to /usr/bin/regular
+- Create a service file in `/etc/systemd/system/`
 - Enable the service to start automatically
 - Start the service immediately
 
 To check the service status:
 
 ```shell
-systemctl --user status regular
+systemctl status regular
 ```
 
 To view logs:
 
 ```shell
-journalctl --user -u regular -f
+journalctl -u regular -f
 ```
 
 ## Shell completions
