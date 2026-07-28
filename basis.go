@@ -11,13 +11,13 @@ import (
 const (
 	version = "0.4.0"
 
-	appDBFileName         = "state.sqlite3"
-	appLockFileName       = "app.lock"
-	appLogFileName        = "app.log"
-	appSocketFileName     = "socket"
-	dirName               = "regular"
+	appDBFileName     = "state.sqlite3"
+	appLockFileName   = "app.lock"
+	appLogFileName    = "app.log"
+	appSocketFileName = "socket"
+	dirName           = "regular"
 
-	socketEnv = "REGULAR_SOCK"
+	socketEnv             = "REGULAR_SOCK"
 	globalEnvFileName     = "global.env"
 	jobConfigFileName     = "config.star"
 	jobEnvFileName        = "job.env"
