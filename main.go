@@ -117,7 +117,7 @@ func run() int {
 	log.SetFlags(0)
 	log.SetOutput(&logWriter{tee: nil})
 
-	defaultLogPath := filepath.Join(defaultStateRoot, appLogFileName)
+	defaultLogPath := filepath.Join(defaultLogRoot, appLogFileName)
 
 	cli := CLI{}
 	ctx := kong.Parse(&cli,
