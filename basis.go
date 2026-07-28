@@ -64,6 +64,7 @@ var (
 type Config struct {
 	ConfigRoot string
 	StateRoot  string
+	LogRoot    string
 }
 
 func jobDir(path string) string {

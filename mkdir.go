@@ -15,5 +15,9 @@ func createDirectories(config Config) error {
 		return fmt.Errorf("failed to create state directory %q: %w", config.StateRoot, err)
 	}
 
+	if err := os.MkdirAll(config.LogRoot, dirPerms); err != nil {
+		return fmt.Errorf("failed to create state directory %q: %w", config.LogRoot, err)
+	}
+
 	return nil
 }

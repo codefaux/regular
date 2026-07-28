@@ -144,6 +144,7 @@ func run() int {
 	config := Config{
 		ConfigRoot: cli.ConfigRoot,
 		StateRoot:  cli.StateRoot,
+		LogRoot:    filepath.Dir(cli.Output),
 	}
 
 	command := ctx.Command()
