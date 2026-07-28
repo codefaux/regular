@@ -17,18 +17,12 @@ func defaultSocketPath() (string, error) {
 		return envPath, nil
 	}
 
-	hostname, err := os.Hostname()
-	if err != nil {
-		return "", fmt.Errorf("failed to get hostname: %w", err)
-	}
-
 	candidates := []string{}
-	subdir := dirName
 
 	candidates = append(
 		candidates,
-		filepath.Join("/run", dirName),
-		filepath.Join("/var/run", dirName),
+		filepath.Join("/run", appSocketFileName),
+		filepath.Join("/var/run", appSocketFileName),
 	)
 
 	var runtimeDir string
@@ -41,10 +35,9 @@ func defaultSocketPath() (string, error) {
 
 	if runtimeDir == "" {
 		runtimeDir = os.TempDir()
-		subdir = dirName + "-" + dirName + "@" + hostname
 	}
 
-	return filepath.Join(runtimeDir, subdir, appSocketFileName), nil
+	return filepath.Join(runtimeDir, appSocketFileName), nil
 }
 
 // checkSocketSecurity verifies a socket file is a Unix domain socket owned

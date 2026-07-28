@@ -12,7 +12,7 @@ const (
 	appDBFileName     = "state.sqlite3"
 	appLockFileName   = "app.lock"
 	appLogFileName    = "app.log"
-	appSocketFileName = "socket"
+	appSocketFileName = "regular.socket"
 	dirName           = "regular"
 
 	socketEnv             = "REGULAR_SOCK"
