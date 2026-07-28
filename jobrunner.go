@@ -258,7 +258,8 @@ func (r jobRunner) summarize() string {
 	var sb strings.Builder
 
 	for queueName, queue := range r.queues {
-		sb.WriteString(queueName + ": ")
+		sb.WriteString(queueName)
+		sb.WriteString(": ")
 
 		for i, job := range queue.jobs {
 			sb.WriteString(job.Name)

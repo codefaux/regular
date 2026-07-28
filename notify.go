@@ -119,10 +119,13 @@ func formatMessage(db *appDB, jobName string, completed CompletedJob) (string, s
 				continue
 			}
 
-			sb.WriteString(logName + ":\n")
+			sb.WriteString(logName)
+			sb.WriteString(":\n")
 
 			for _, line := range lines {
-				sb.WriteString("> " + line + "\n")
+				sb.WriteString("> ")
+				sb.WriteString(line)
+				sb.WriteString("\n")
 			}
 		}
 	}
