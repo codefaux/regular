@@ -1,6 +1,6 @@
 [Unit]
 Description=Regular job scheduler
-Documentation=https://github.com/dbohdan/regular
+Documentation=https://github.com/codefaux/regular
 
 [Service]
 Type=simple
