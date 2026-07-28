@@ -15,6 +15,7 @@ import (
 )
 
 func (r *RunCmd) Run(config Config) error {
+	fmt.Println("Running job(s) ...")
 	socketPath, err := defaultSocketPath()
 	if err != nil {
 		return fmt.Errorf("failed to resolve socket path: %w", err)
@@ -45,6 +46,7 @@ func (r *RunCmd) Run(config Config) error {
 // frames back to stdout/stderr, and reports whether any job failed.
 func (r *RunCmd) runOverSocket(socketPath string) (failed bool, err error) {
 	for _, jobName := range r.JobNames {
+		fmt.Println("Beginning job " + jobName)
 		jobFailed, jobErr := runOneOverSocket(socketPath, jobName, r.Force)
 		if jobErr != nil {
 			return failed, jobErr
