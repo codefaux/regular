@@ -4,7 +4,7 @@ Documentation=https://github.com/dbohdan/regular
 
 [Service]
 Type=simple
-ExecStart=/home/%USER%/go/bin/regular start
+ExecStart=/usr/bin/regular start
 
 Restart=on-failure
 RestartSec=30

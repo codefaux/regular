@@ -3,12 +3,15 @@ set -eu
 
 cd "$(dirname "$0")"
 
-systemd_user_dir=${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user
+go build ..
+install regular /usr/bin/regular
+
+systemd_dir=/etc/systemd/system
 service_file=regular.service
 
-mkdir -p "$systemd_user_dir"
-awk -v user="$USER" '{ gsub(/%USER%/, user); print }' <"$service_file" >"$systemd_user_dir"/"$service_file"
+mkdir -p "$systemd_dir"
+install "$service_file" "${systemd_dir}/${service_file}"
 
-systemctl --user daemon-reload
-systemctl --user enable "$service_file"
-systemctl --user start "$service_file"
+systemctl daemon-reload
+systemctl enable "$service_file"
+systemctl start "$service_file"
