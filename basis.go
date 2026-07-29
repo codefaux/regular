@@ -35,7 +35,7 @@ const (
 	shouldRunVar  = "should_run"
 
 	redactedValue = "[redacted]"
-	secretRegexp  = "(?i)(key|password|secret|token)"
+	secretRegexp  = "(?i)(key|password|secret|token|session|clientid|passphrase|passwd)"
 
 	exitOK       = 0
 	exitError    = 1
