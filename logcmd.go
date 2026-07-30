@@ -9,7 +9,7 @@ import (
 )
 
 func (l *LogCmd) Run(config Config) error {
-	logPath := filepath.Join(config.StateRoot, appLogFileName)
+	logPath := filepath.Join(config.LogRoot, appLogFileName)
 	lines, err := tailFile(logPath, l.LogLines)
 
 	if err != nil {
