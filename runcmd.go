@@ -120,7 +120,7 @@ func (r *RunCmd) runStandalone(config Config) error {
 	}
 	defer db.close()
 
-	runner, err := newJobRunner(db, notifyUserByEmail(db), config.StateRoot)
+	runner, err := newJobRunner(db, notifyUserByEmail(db), config.LogRoot)
 	if err != nil {
 		return err
 	}
