@@ -17,21 +17,21 @@ import (
 )
 
 type jobRunner struct {
-	db        *appDB
-	notify    notifyWhenDone
-	queues    map[string]jobQueue
-	stateRoot string
+	db      *appDB
+	notify  notifyWhenDone
+	queues  map[string]jobQueue
+	logRoot string
 
 	mu *sync.Mutex
 }
 
-func newJobRunner(db *appDB, notify notifyWhenDone, stateRoot string) (jobRunner, error) {
+func newJobRunner(db *appDB, notify notifyWhenDone, logRoot string) (jobRunner, error) {
 	return jobRunner{
-		db:        db,
-		notify:    notify,
-		queues:    make(map[string]jobQueue),
-		stateRoot: stateRoot,
-		mu:        &sync.Mutex{},
+		db:      db,
+		notify:  notify,
+		queues:  make(map[string]jobQueue),
+		logRoot: logRoot,
+		mu:      &sync.Mutex{},
 	}, nil
 }
 
@@ -114,7 +114,7 @@ func (r jobRunner) runQueueHead(queueName string) error {
 		return nil
 	}
 
-	jobStateDir := filepath.Join(r.stateRoot, job.Name)
+	jobLogDir := filepath.Join(r.logRoot, job.Name)
 
 	if job.Jitter > 0 {
 		sleepDuration := time.Duration(job.Jitter.Seconds()*rand.Float64()) * time.Second
@@ -127,13 +127,13 @@ func (r jobRunner) runQueueHead(queueName string) error {
 	cj.Started = time.Now()
 	logJobPrintf(job.Name, "Started")
 
-	stdoutFilePath := filepath.Join(jobStateDir, stdoutFileName)
-	stderrFilePath := filepath.Join(jobStateDir, stderrFileName)
+	stdoutFilePath := filepath.Join(jobLogDir, stdoutFileName)
+	stderrFilePath := filepath.Join(jobLogDir, stderrFileName)
 
 	runErr := func() error {
 		var stdoutFile, stderrFile io.Writer
 		if job.Log {
-			if err := os.MkdirAll(jobStateDir, dirPerms); err != nil {
+			if err := os.MkdirAll(jobLogDir, dirPerms); err != nil {
 				return fmt.Errorf("failed to create job state directory: %w", err)
 			}
 
