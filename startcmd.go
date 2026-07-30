@@ -60,7 +60,7 @@ func runService(config Config) error {
 		return err
 	}
 	defer db.close()
-	runner, _ := newJobRunner(db, notifyUserByEmail(db), config.StateRoot)
+	runner, _ := newJobRunner(db, notifyUserByEmail(db), config.LogRoot)
 
 	socketPath, err := defaultSocketPath()
 	if err != nil {
