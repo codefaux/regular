@@ -1,18 +1,10 @@
 #!/usr/bin/env bash
-
 set -euo pipefail
 
-APP_DIR="/docker/app"
-REPO_DIR=""
-USE_BRANCH=""
-USE_TAG=""
-TRACKING_FILE=""
-REPO_BRANCH=""
+TRACKING_FILE=${REGULAR_JOB_DIR}/version_tracking
 
 # If we have a repo dir, begin repo update procedure
-if [[ -z "$REPO_DIR" ]]; then
-    echo "ERROR: REPO_DIR is empty. Skipping git update." >&2
-else
+if [[ -n "$REPO_DIR" ]]; then
     echo "==> Updating Git repository..."
 
     # If USE_BRANCH or USE_TAG are not EMPTY STRINGS
@@ -39,7 +31,7 @@ else
             fi
 
             # if we have a tracking file and tags match, exit cleanly
-            if [[ -f "$TRACKING_FILE" ]] && [[ "$(cat "$TRACKING_FILE")" == "$TAG" ]]; then
+            if [[ -s "$TRACKING_FILE" ]] && [[ "$(cat "$TRACKING_FILE")" == "$TAG" ]]; then
                 echo "==> Already at latest tag '${TAG}'. Nothing to do."
                 exit 0
             fi
@@ -80,7 +72,7 @@ else
             }
 
             # if we have a tracking file and commits match, exit cleanly
-            if [[ -f "$TRACKING_FILE" ]] && [[ "$(cat "$TRACKING_FILE")" == "$UPSTREAM_COMMIT" ]]; then
+            if [[ -s "$TRACKING_FILE" ]] && [[ "$(cat "$TRACKING_FILE")" == "$UPSTREAM_COMMIT" ]]; then
                 echo "==> Already at latest commit '${UPSTREAM_COMMIT}'. Nothing to do."
                 exit 0
             fi
@@ -102,6 +94,48 @@ else
             echo "==> Repo switched to upstream commit '${UPSTREAM_COMMIT}'"
         fi
     fi
+elif [[ -n "$USE_BUILDER" ]]; then
+    # Check builder image
+    if [[ -z "$BUILDER_IMAGE" ]]; then
+        echo "ERROR: BUILDER_IMAGE is empty. Aborted." >&2
+        exit 1
+    fi
+
+    if [[ -z "$TRACKING_FILE" ]]; then
+        echo "ERROR: TRACKING_FILE is empty. Aborted." >&2
+        exit 1
+    fi
+
+    echo "==> Checking builder image '${BUILDER_IMAGE}'..."
+
+    # Pull the builder image so that we are checking the current image.
+    docker pull "$BUILDER_IMAGE" || {
+        echo "ERROR: Failed to pull builder image '${BUILDER_IMAGE}'. Aborted." >&2
+        exit 1
+    }
+
+    # Get the immutable local image ID after the pull.
+    BUILDER_ID=$(docker image inspect "$BUILDER_IMAGE" --format '{{.Id}}') || {
+        echo "ERROR: Failed to identify builder image '${BUILDER_IMAGE}'. Aborted." >&2
+        exit 1
+    }
+
+    # If we have a tracking file and the builder image matches, exit cleanly.
+    if [[ -f "$TRACKING_FILE" ]] && [[ "$(cat "$TRACKING_FILE")" == "$BUILDER_ID" ]]; then
+        echo "==> Builder image '${BUILDER_IMAGE}' is unchanged. Nothing to do."
+        exit 0
+    fi
+
+    echo "==> New builder image detected: '${BUILDER_ID}'"
+
+    # Store the builder image ID for tracking.
+    printf '%s\n' "$BUILDER_ID" > "$TRACKING_FILE" || {
+        echo "ERROR: Failed to write builder image ID to '$TRACKING_FILE'. Aborted." >&2
+        exit 1
+    }
+
+    echo "==> Builder image tracking updated."
+
 fi
 
 echo "==> Building Docker images..."

@@ -12,7 +12,7 @@ timeout = 4 * one_hour
 command = [
     "sh",
     "-c",
-    "docker-update-build.sh",
+    "${REGULAR_JOB_DIR}/docker-update-build.sh",
 ]
 
 # Queue name (the default is the name of the job directory).
