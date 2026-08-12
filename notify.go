@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"os/user"
+	"strconv"
 	"strings"
 
 	mail "github.com/xhit/go-simple-mail/v2"
@@ -70,10 +72,39 @@ func notifyUserByEmail(db *appDB) notifyWhenDone {
 			return fmt.Errorf("failed to get current user: %v", err)
 		}
 
+		// BUT
+		// BUT
+		// BUT it doesn't really make sense to use env vars for background service credentials
+
+		host := os.Getenv("SMTP_HOST")
+		if host == "" {
+			host = smtpServer
+		}
+
+		port := smtpPort
+		if value := os.Getenv("SMTP_PORT"); value != "" {
+			port, err = strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("invalid SMTP_PORT: %v", err)
+			}
+		}
+
+		username := os.Getenv("SMTP_USERNAME")
+		if username == "" {
+			username = currentUser.Username
+		}
+
+		password := os.Getenv("SMTP_PASSWORD")
+
 		server := mail.NewSMTPClient()
-		server.Host = smtpServer
-		server.Port = smtpPort
-		server.Username = currentUser.Username
+		server.Host = host
+		server.Port = port
+
+		server.Username = username
+
+		if password == "" {
+			server.Password = password
+		}
 
 		smtpClient, err := server.Connect()
 		if err != nil {
