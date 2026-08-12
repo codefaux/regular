@@ -25,7 +25,17 @@ func (s *StatusCmd) Run(config Config) error {
 			return err
 		}
 
-		if !info.IsDir() && filepath.Base(path) == jobConfigFileName {
+		if info.IsDir() {
+			ignorePath := filepath.Join(path, ".ignore")
+			if _, err := os.Stat(ignorePath); err == nil {
+				return filepath.SkipDir
+			} else if !os.IsNotExist(err) {
+				return err
+			}
+			return nil
+		}
+
+		if filepath.Base(path) == jobConfigFileName {
 			_, _, err := jobs.update(config.ConfigRoot, path)
 			if err != nil {
 				return err
