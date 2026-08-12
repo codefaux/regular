@@ -135,19 +135,28 @@ elif [[ -n "$USE_BUILDER" ]]; then
     }
 
     echo "==> Builder image tracking updated."
-
 fi
 
-echo "==> Building Docker images..."
 cd "$APP_DIR" || {
     echo "ERROR: Failed to change directory to '$APP_DIR'. Aborted." >&2
     exit 1
 }
 
-docker compose build || {
-    echo "ERROR: Docker Compose build failed. Aborted." >&2
-    exit 1
-}
+if [[ -n "$USE_COMPOSE_BUILD" ]]; then
+    echo "==> Building Docker images..."
+    docker compose build ${COMPOSE_BUILD_NAME} || {
+        echo "ERROR: Docker Compose build failed. Aborted." >&2
+        exit 1
+    }
+fi
+
+if [[ -n "$USE_COMPOSE_PULL" ]]; then
+    echo "==> Pulling Docker images..."
+    docker compose pull ${COMPOSE_PULL_NAME} || {
+        echo "ERROR: Docker Compose build failed. Aborted." >&2
+        exit 1
+    }
+fi
 
 echo "==> Starting Docker Compose services..."
 docker compose up -d || {
