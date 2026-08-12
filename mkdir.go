@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-// createDirectories creates the ConfigRoot and StateRoot directories if they don't exist.
+// createDirectories creates the ConfigRoot, StateRoot and LogRoot directories if they don't exist.
 func createDirectories(config Config) error {
 	if err := os.MkdirAll(config.ConfigRoot, dirPerms); err != nil {
 		return fmt.Errorf("failed to create config directory %q: %w", config.ConfigRoot, err)
@@ -16,7 +16,7 @@ func createDirectories(config Config) error {
 	}
 
 	if err := os.MkdirAll(config.LogRoot, dirPerms); err != nil {
-		return fmt.Errorf("failed to create state directory %q: %w", config.LogRoot, err)
+		return fmt.Errorf("failed to create log directory %q: %w", config.LogRoot, err)
 	}
 
 	return nil
