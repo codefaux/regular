@@ -33,11 +33,11 @@ const (
 
 type notifyWhenDone func(string, CompletedJob) error
 
-func GenerateCredential(user string, host string, port int) string {
-	input := "v1\x00" + "regular" + "\x00" + host + "\x00" + user + "\x00" + strconv.Itoa(port)
+func GenerateCredential(hostname string, user string, host string, port int) string {
+	input := "v1\x00" + hostname + "\x00" + user + "\x00" + host + "\x00" + strconv.Itoa(port)
 	sum := sha256.Sum256([]byte(input))
 
-	return base64.RawURLEncoding.EncodeToString(sum[:])
+	return base64.RawURLEncoding.EncodeToString(sum[:10])
 }
 
 func parseNotifyMode(mode string) (notifyMode, error) {
