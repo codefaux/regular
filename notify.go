@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"os/user"
@@ -30,6 +32,13 @@ const (
 )
 
 type notifyWhenDone func(string, CompletedJob) error
+
+func GenerateCredential(user string, host string, port int) string {
+	input := "v1\x00" + "regular" + "\x00" + host + "\x00" + user + "\x00" + strconv.Itoa(port)
+	sum := sha256.Sum256([]byte(input))
+
+	return base64.RawURLEncoding.EncodeToString(sum[:])
+}
 
 func parseNotifyMode(mode string) (notifyMode, error) {
 	switch mode {
@@ -103,12 +112,15 @@ func notifyUserByEmail(db *appDB) notifyWhenDone {
 		server.Username = username
 
 		if password == "" {
-			server.Password = password
+			server.Password = GenerateCredential(username, host, port)
 		}
 
 		smtpClient, err := server.Connect()
 		if err != nil {
-			return fmt.Errorf("failed to connect to SMTP server: %v\n", err)
+			return fmt.Errorf("failed to connect to SMTP server: \n%v\n\nNOTE: %s now generates credentials unless overridden.\n"+
+				"Generated credentials are determined uniquely via SMTP username, hostname, and port.\n"+
+				"Generated credentials were; user '%s' password '%s'\n"+
+				"Create or modify an account to match, or specify your own.", err, "regular", username, password)
 		}
 
 		email := mail.NewMSG()
