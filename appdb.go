@@ -4,10 +4,13 @@ import (
 	"bufio"
 	"bytes"
 	"database/sql"
+	"errors"
 	"fmt"
 	"io"
 	"os"
+	"os/user"
 	"path/filepath"
+	"strconv"
 
 	_ "modernc.org/sqlite"
 )
@@ -16,20 +19,84 @@ type appDB struct {
 	db *sql.DB
 }
 
+type credentials struct {
+	Server string
+	User   string
+	Port   int
+	SendTo string
+}
+
+const v0_schema string = `
+				CREATE TABLE IF NOT EXISTS completed_jobs (
+					id INTEGER PRIMARY KEY,
+					job_name TEXT NOT NULL,
+					error TEXT,
+					exit_status INTEGER NOT NULL,
+					started DATETIME NOT NULL,
+					finished DATETIME NOT NULL,
+					created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+				);
+
+				CREATE INDEX IF NOT EXISTS idx_completed_jobs_job_name
+					ON completed_jobs(job_name);
+
+				CREATE TABLE IF NOT EXISTS job_logs (
+					id INTEGER PRIMARY KEY,
+					completed_job_id INTEGER NOT NULL,
+					log_name TEXT NOT NULL,
+					line_number INTEGER NOT NULL,
+					line TEXT NOT NULL,
+					FOREIGN KEY(completed_job_id) REFERENCES completed_jobs(id)
+				);
+
+				CREATE INDEX IF NOT EXISTS idx_job_logs_completed_job_id ON job_logs(completed_job_id);
+`
+const v1_schema string = v0_schema + `
+				CREATE TABLE IF NOT EXISTS credentials (
+					id INTEGER PRIMARY KEY CHECK (id = 1),
+					server TEXT NOT NULL,
+					user TEXT NOT NULL,
+					port INTEGER NOT NULL,
+					sendto TEXT NOT NULL
+				);
+
+				CREATE TABLE IF NOT EXISTS database_version (
+					id INTEGER PRIMARY KEY CHECK (id = 1),
+					version TEXT NOT NULL
+				);
+`
+
+var schemas = map[int]string{
+	0: v0_schema,
+	1: v1_schema,
+}
+
 func openAppDB(stateRoot string) (*appDB, error) {
 	if err := os.MkdirAll(stateRoot, dirPerms); err != nil {
 		return nil, fmt.Errorf("failed to create state directory: %v", err)
 	}
 
 	dbPath := filepath.Join(stateRoot, appDBFileName)
-	db, err := sql.Open("sqlite", dbPath)
+	dsnPath := "file:" + dbPath + "?_pragma=foreign_keys(1)"
+
+	_, err := os.Stat(dbPath)
+	dbExists := err == nil
+
+	db, err := sql.Open("sqlite", dsnPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %v", err)
 	}
 
-	if err := createSchema(db); err != nil {
-		db.Close()
-		return nil, err
+	if dbExists {
+		if err := checkSchema(db); err != nil {
+			db.Close()
+			return nil, err
+		}
+	} else {
+		if err := createSchema(db, -1); err != nil {
+			db.Close()
+			return nil, err
+		}
 	}
 
 	return &appDB{db: db}, nil
@@ -39,35 +106,182 @@ func (c *appDB) close() error {
 	return c.db.Close()
 }
 
-func createSchema(db *sql.DB) error {
-	_, err := db.Exec(`
-	    PRAGMA foreign_keys=ON;
+func checkSchema(db *sql.DB) error {
+	var version string
 
-		CREATE TABLE IF NOT EXISTS completed_jobs (
-			id INTEGER PRIMARY KEY,
-			job_name TEXT NOT NULL,
-			error TEXT,
-			exit_status INTEGER NOT NULL,
-			started DATETIME NOT NULL,
-			finished DATETIME NOT NULL,
-			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-		);
+	err := db.QueryRow(`
+		SELECT version
+		FROM database_version
+		WHERE id = 1
+	`).Scan(&version)
 
-		CREATE INDEX IF NOT EXISTS idx_completed_jobs_job_name ON completed_jobs(job_name);
+	if errors.Is(err, sql.ErrNoRows) {
+		return upgradeSchema(db, 0, dbVersion)
+	}
+	if err != nil {
+		return fmt.Errorf("failed to read database version: %w", err)
+	}
 
-		CREATE TABLE IF NOT EXISTS job_logs (
-			id INTEGER PRIMARY KEY,
-			completed_job_id INTEGER NOT NULL,
-			log_name TEXT NOT NULL,
-			line_number INTEGER NOT NULL,
-			line TEXT NOT NULL,
-			FOREIGN KEY(completed_job_id) REFERENCES completed_jobs(id)
-		);
+	currentVersion, err := strconv.Atoi(version)
+	if err != nil {
+		return fmt.Errorf("invalid database version %q: %w", version, err)
+	}
 
-		CREATE INDEX IF NOT EXISTS idx_job_logs_completed_job_id ON job_logs(completed_job_id);
-	`)
+	if currentVersion > dbVersion {
+		return fmt.Errorf(
+			"database version %d is newer than supported version %d",
+			currentVersion,
+			dbVersion,
+		)
+	}
 
-	return err
+	if currentVersion < dbVersion {
+		return upgradeSchema(db, currentVersion, dbVersion)
+	}
+
+	return nil
+}
+
+func mark_db_version(tx *sql.Tx, version int) error {
+	_, err := tx.Exec(`
+		INSERT INTO database_version (id, version)
+		VALUES (1, ?)
+		ON CONFLICT(id) DO UPDATE SET version = excluded.version
+	`, strconv.Itoa(version))
+	if err != nil {
+		return fmt.Errorf("failed to update database version: %w", err)
+	}
+
+	return nil
+}
+
+func upgradeSchema(db *sql.DB, from, to int) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin schema upgrade: %w", err)
+	}
+	defer tx.Rollback()
+
+	for version := from + 1; version <= to; version++ {
+		switch version {
+		case 1:
+			// added smtp credentials storage
+			_, err = tx.Exec(schemas[1])
+		}
+
+		if err != nil {
+			return fmt.Errorf("failed to upgrade database to version %d: %w", version, err)
+		}
+	}
+
+	mark_db_version(tx, to)
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit schema upgrade: %w", err)
+	}
+
+	return nil
+}
+
+func createSchema(db *sql.DB, version int) error {
+	if version == -1 {
+		version = dbVersion
+	}
+
+	schema, ok := schemas[version]
+	if !ok {
+		return fmt.Errorf("schema version %d not found", version)
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin schema upgrade: %w", err)
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(schema)
+	if err != nil {
+		return fmt.Errorf("failed to create schema version %d: %w", version, err)
+	}
+
+	err = mark_db_version(tx, version)
+	if err != nil {
+		return fmt.Errorf("failed to mark database version %d: %w", version, err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit schema upgrade: %w", err)
+	}
+
+	return nil
+}
+
+func (c *appDB) saveCredentials(sendto string, user string, server string, port int) error {
+	tx, err := c.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
+	result, err := tx.Exec(`
+		INSERT INTO credentials (id, server, user, port, sendto)
+		VALUES (1, ?, ?, ?)
+		ON CONFLICT(id) DO UPDATE SET
+			server = excluded.server,
+			user = excluded.user,
+			port = excluded.port,
+			sendto = excluded.sendto
+	`, server, user, port, sendto)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = result.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func getCredentials(db *sql.DB) *credentials {
+	var creds credentials
+
+	err := db.QueryRow(`
+		SELECT server, user, port, sendto
+		FROM credentials
+		WHERE id = 1
+	`).Scan(
+		&creds.Server,
+		&creds.User,
+		&creds.Port,
+		&creds.SendTo,
+	)
+	if err != nil {
+
+		localhostname, err := os.Hostname()
+		if err != nil {
+			localhostname = "localhost"
+		}
+
+		currentUsername := "unknown"
+		currentUser, err := user.Current()
+		if err == nil {
+			currentUsername = currentUser.Username
+		}
+
+		creds.Server = localhostname
+		creds.User = currentUsername
+		creds.Port = 25
+		creds.SendTo = localUserAddress(currentUsername, localhostname)
+
+		return &creds
+	}
+
+	return &creds
 }
 
 func (c *appDB) saveCompletedJob(jobName string, completed CompletedJob, logs []logFile) error {
