@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	version = "0.4.0"
+	version   = "0.5.0"
+	dbVersion = 1
 
 	appDBFileName     = "state.sqlite3"
 	appLockFileName   = "app.lock"
