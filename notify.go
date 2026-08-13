@@ -76,14 +76,15 @@ func notifyUserByEmail(db *appDB) notifyWhenDone {
 			return fmt.Errorf("failed to format notification message: %v", err)
 		}
 
+		localhostname, err := os.Hostname()
+		if err != nil {
+			return err
+		}
+
 		currentUser, err := user.Current()
 		if err != nil {
 			return fmt.Errorf("failed to get current user: %v", err)
 		}
-
-		// BUT
-		// BUT
-		// BUT it doesn't really make sense to use env vars for background service credentials
 
 		host := os.Getenv("SMTP_HOST")
 		if host == "" {
@@ -105,22 +106,22 @@ func notifyUserByEmail(db *appDB) notifyWhenDone {
 
 		password := os.Getenv("SMTP_PASSWORD")
 
-		server := mail.NewSMTPClient()
-		server.Host = host
-		server.Port = port
+		client := mail.NewSMTPClient()
+		client.Host = host
+		client.Port = port
 
-		server.Username = username
+		client.Username = username
 
 		if password == "" {
-			server.Password = GenerateCredential(username, host, port)
+			client.Password = GenerateCredential(localhostname, username, host, port)
 		}
 
-		smtpClient, err := server.Connect()
+		mailer, err := client.Connect()
 		if err != nil {
 			return fmt.Errorf("failed to connect to SMTP server: \n%v\n\nNOTE: %s now generates credentials unless overridden.\n"+
 				"Generated credentials are determined uniquely via SMTP username, hostname, and port.\n"+
-				"Generated credentials were; user '%s' password '%s'\n"+
-				"Create or modify an account to match, or specify your own.", err, "regular", username, password)
+				"Used credentials (after overrides) were; user '%s' password '%s'\n"+
+				"Create or modify an account to match, or specify your own.", err, "regular", client.Username, client.Password)
 		}
 
 		email := mail.NewMSG()
@@ -129,7 +130,7 @@ func notifyUserByEmail(db *appDB) notifyWhenDone {
 			SetSubject(subject).
 			SetBody(mail.TextPlain, text)
 
-		if err := email.Send(smtpClient); err != nil {
+		if err := email.Send(mailer); err != nil {
 			return fmt.Errorf("failed to send email: %v\n", err)
 		}
 
