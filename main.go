@@ -32,12 +32,20 @@ type StatusCmd struct {
 	JobNames []string `arg:"" optional:"" help:"Jobs to show status for (shows all jobs if none specified)"`
 }
 
+type CredentialsCmd struct {
+	SMTPUsername  string `help:"SMTP Username to show credentials for"`
+	SMTPHostname  string `help:"SMTP Hostname to show credentials for"`
+	SMTPPort      int    `help:"SMTP Port to show credentials for"`
+	LocalHostname string `help:"Local Hostname to show credentials for"`
+}
+
 type CLI struct {
-	List   ListCmd   `cmd:"" help:"List available jobs"`
-	Log    LogCmd    `cmd:"" help:"Show application log"`
-	Run    RunCmd    `cmd:"" help:"Run jobs once"`
-	Start  StartCmd  `cmd:"" help:"Start scheduler"`
-	Status StatusCmd `cmd:"" help:"Show job status"`
+	List     ListCmd        `cmd:"" help:"List available jobs"`
+	Log      LogCmd         `cmd:"" help:"Show application log"`
+	Run      RunCmd         `cmd:"" help:"Run jobs once"`
+	Start    StartCmd       `cmd:"" help:"Start scheduler"`
+	Status   StatusCmd      `cmd:"" help:"Show job status"`
+	GetLogin CredentialsCmd `cmd:"" help:"Show generated credentials"`
 
 	Version    VersionFlag `short:"V" help:"Print version number and exit"`
 	ConfigRoot string      `name:"config-dir" short:"c" help:"Path to config directory" default:"${defaultConfigRoot}" type:"path"`
