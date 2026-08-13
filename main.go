@@ -33,6 +33,7 @@ type StatusCmd struct {
 }
 
 type CredentialsCmd struct {
+	Store         bool   `help:"Store credentials to app state"`
 	SMTPUsername  string `help:"SMTP Username to show credentials for"`
 	SMTPHostname  string `help:"SMTP Hostname to show credentials for"`
 	SMTPPort      int    `help:"SMTP Port to show credentials for"`
@@ -40,12 +41,12 @@ type CredentialsCmd struct {
 }
 
 type CLI struct {
-	List     ListCmd        `cmd:"" help:"List available jobs"`
-	Log      LogCmd         `cmd:"" help:"Show application log"`
-	Run      RunCmd         `cmd:"" help:"Run jobs once"`
-	Start    StartCmd       `cmd:"" help:"Start scheduler"`
-	Status   StatusCmd      `cmd:"" help:"Show job status"`
-	GetLogin CredentialsCmd `cmd:"" help:"Show generated credentials"`
+	List   ListCmd        `cmd:"" help:"List available jobs"`
+	Log    LogCmd         `cmd:"" help:"Show application log"`
+	Run    RunCmd         `cmd:"" help:"Run jobs once"`
+	Start  StartCmd       `cmd:"" help:"Start scheduler"`
+	Status StatusCmd      `cmd:"" help:"Show job status"`
+	SMTP   CredentialsCmd `cmd:"" help:"Manage SMTP credentials"`
 
 	Version    VersionFlag `short:"V" help:"Print version number and exit"`
 	ConfigRoot string      `name:"config-dir" short:"c" help:"Path to config directory" default:"${defaultConfigRoot}" type:"path"`
