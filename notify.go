@@ -1,22 +1,15 @@
 package main
 
 import (
-	"crypto/sha256"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"os/user"
-	"strconv"
 	"strings"
 
 	mail "github.com/xhit/go-simple-mail/v2"
 )
 
 const (
-	smtpServer   = "127.0.0.1"
-	smtpPort     = 25
-	fromUsername = "regular"
-
 	errorText      = "Error: %v\n\n"
 	exitStatusText = "Exit status: %v\n\n"
 	failureSubject = "Job %q failed"
@@ -32,13 +25,6 @@ const (
 )
 
 type notifyWhenDone func(string, CompletedJob) error
-
-func GenerateCredential(hostname string, user string, host string, port int) string {
-	input := "v1\x00" + hostname + "\x00" + user + "\x00" + host + "\x00" + strconv.Itoa(port)
-	sum := sha256.Sum256([]byte(input))
-
-	return base64.RawURLEncoding.EncodeToString(sum[:10])
-}
 
 func parseNotifyMode(mode string) (notifyMode, error) {
 	switch mode {
@@ -65,10 +51,6 @@ func notifyIfNeeded(notify notifyWhenDone, mode notifyMode, jobName string, comp
 	return notify(jobName, completed)
 }
 
-func localUserAddress(username string) string {
-	return username + "@localhost"
-}
-
 func notifyUserByEmail(db *appDB) notifyWhenDone {
 	return func(jobName string, completed CompletedJob) error {
 		subject, text, err := formatMessage(db, jobName, completed)
@@ -76,9 +58,11 @@ func notifyUserByEmail(db *appDB) notifyWhenDone {
 			return fmt.Errorf("failed to format notification message: %v", err)
 		}
 
+		creds := getCredentials(db.db)
+
 		localhostname, err := os.Hostname()
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to get current hostname: %v", err)
 		}
 
 		currentUser, err := user.Current()
@@ -86,35 +70,12 @@ func notifyUserByEmail(db *appDB) notifyWhenDone {
 			return fmt.Errorf("failed to get current user: %v", err)
 		}
 
-		host := os.Getenv("SMTP_HOST")
-		if host == "" {
-			host = smtpServer
-		}
-
-		port := smtpPort
-		if value := os.Getenv("SMTP_PORT"); value != "" {
-			port, err = strconv.Atoi(value)
-			if err != nil {
-				return fmt.Errorf("invalid SMTP_PORT: %v", err)
-			}
-		}
-
-		username := os.Getenv("SMTP_USERNAME")
-		if username == "" {
-			username = currentUser.Username
-		}
-
-		password := os.Getenv("SMTP_PASSWORD")
-
 		client := mail.NewSMTPClient()
-		client.Host = host
-		client.Port = port
+		client.Host = creds.Server
+		client.Port = creds.Port
+		client.Username = creds.User
 
-		client.Username = username
-
-		if password == "" {
-			client.Password = GenerateCredential(localhostname, username, host, port)
-		}
+		client.Password = GenerateCredential(localhostname, creds.Server, creds.User, creds.Port)
 
 		mailer, err := client.Connect()
 		if err != nil {
@@ -125,8 +86,8 @@ func notifyUserByEmail(db *appDB) notifyWhenDone {
 		}
 
 		email := mail.NewMSG()
-		email.SetFrom(localUserAddress(fromUsername)).
-			AddTo(localUserAddress(currentUser.Username)).
+		email.SetFrom(localUserAddress(currentUser.Username, localhostname)).
+			AddTo(creds.SendTo).
 			SetSubject(subject).
 			SetBody(mail.TextPlain, text)
 
