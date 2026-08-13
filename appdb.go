@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"database/sql"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -62,7 +61,7 @@ const v1_schema string = v0_schema + `
 
 				CREATE TABLE IF NOT EXISTS database_version (
 					id INTEGER PRIMARY KEY CHECK (id = 1),
-					version TEXT NOT NULL
+					version INTEGER NOT NULL
 				);
 `
 
@@ -107,36 +106,51 @@ func (c *appDB) close() error {
 }
 
 func checkSchema(db *sql.DB) error {
-	var version string
+	var detectVersion int
 
+	var v0_or_greater bool
 	err := db.QueryRow(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM sqlite_master
+			WHERE type = 'table' AND name = 'job_logs'
+		)
+	`).Scan(&v0_or_greater)
+	if (err != nil) || (!v0_or_greater) {
+		return fmt.Errorf("loaded file does not appear to be for regular.")
+	}
+
+	var v1_or_greater bool
+	err = db.QueryRow(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM sqlite_master
+			WHERE type = 'table' AND name = 'database_version'
+		)
+	`).Scan(&v1_or_greater)
+	if (err != nil) || (!v1_or_greater) {
+		return upgradeSchema(db, 0, dbVersion)
+	}
+
+	err = db.QueryRow(`
 		SELECT version
 		FROM database_version
 		WHERE id = 1
-	`).Scan(&version)
-
-	if errors.Is(err, sql.ErrNoRows) {
-		return upgradeSchema(db, 0, dbVersion)
-	}
+	`).Scan(&detectVersion)
 	if err != nil {
 		return fmt.Errorf("failed to read database version: %w", err)
 	}
 
-	currentVersion, err := strconv.Atoi(version)
-	if err != nil {
-		return fmt.Errorf("invalid database version %q: %w", version, err)
-	}
-
-	if currentVersion > dbVersion {
+	if detectVersion > dbVersion {
 		return fmt.Errorf(
 			"database version %d is newer than supported version %d",
-			currentVersion,
+			detectVersion,
 			dbVersion,
 		)
 	}
 
-	if currentVersion < dbVersion {
-		return upgradeSchema(db, currentVersion, dbVersion)
+	if detectVersion < dbVersion {
+		return upgradeSchema(db, detectVersion, dbVersion)
 	}
 
 	return nil
