@@ -218,6 +218,11 @@ func (r jobRunner) runQueueHead(queueName string) error {
 	}
 
 	if runErr != nil {
+		if job.ErrorIsCode != nil {
+			if cj.ExitCode != *job.ErrorIsCode {
+				return nil
+			}
+		}
 		return newJobError(job.Name, fmt.Errorf("command failed: %w", runErr))
 	}
 
