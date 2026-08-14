@@ -179,6 +179,9 @@ func (r jobRunner) runQueueHead(queueName string) error {
 
 	cj.WasForced = job.Force
 	cj.WarningIsFailure = job.WarningIsFailure
+	cj.ErrorIsCode = job.ErrorIsCode
+	cj.WarningIsCode = job.WarningIsCode
+	cj.SuccessIsCode = job.SuccessIsCode
 	cj.ExitMessage = ""
 	if runErr != nil {
 		cj.ExitMessage = runErr.Error()
