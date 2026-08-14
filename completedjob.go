@@ -5,18 +5,27 @@ import (
 )
 
 type CompletedJob struct {
-	ExitMessage   string
-	ExitCode      int
-	ErrorIsCode   *int
-	WarningIsCode *int
-	SuccessIsCode *int
-	Started       time.Time
-	Finished      time.Time
-	WasForced     bool
-	AttachLogs    AttachMode
+	ExitMessage      string
+	ExitCode         int
+	ErrorIsCode      *int
+	WarningIsCode    *int
+	SuccessIsCode    *int
+	WarningIsFailure *bool
+	Started          time.Time
+	Finished         time.Time
+	WasForced        bool
+	AttachLogs       AttachMode
 }
 
 func (cj CompletedJob) ConsiderFailed() bool {
+	if (cj.WarningIsFailure != nil) && (cj.ExitCode == *cj.WarningIsCode) {
+		if *cj.WarningIsFailure == true {
+			return true
+		} else {
+			return false
+		}
+	}
+
 	if (cj.SuccessIsCode != nil) && (cj.ExitCode != *cj.SuccessIsCode) {
 		return true
 	}
