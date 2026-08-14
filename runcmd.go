@@ -139,6 +139,7 @@ func (r *RunCmd) runStandalone(config Config) error {
 
 		// Either force-run or check should_run.
 		if r.Force {
+			job.Force = true
 			runner.addJob(*job)
 		} else {
 			if err := job.addToQueueIfDue(runner, now); err != nil {
