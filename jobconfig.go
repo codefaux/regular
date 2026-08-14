@@ -14,20 +14,20 @@ import (
 )
 
 type JobConfig struct {
-	Command    []string             `starlark:"command"`
-	Duplicate  bool                 `starlark:"duplicate"`
-	Enable     bool                 `starlark:"enable"`
-	Env        denv.Env             `starlark:"-"`
-	Jitter     time.Duration        `starlark:"jitter"`
-	Log        bool                 `starlark:"log"`
-	Name       string               `starlark:"-"`
-	Notify     notifyMode           `starlark:"-"`
-	OnComplete func(CompletedJob)   `starlark:"-"`
-	Queue      string               `starlark:"queue"`
-	ShouldRun  starlark.Value       `starlark:"should_run"`
-	Stderr     io.Writer            `starlark:"-"`
-	Stdout     io.Writer            `starlark:"-"`
-	Timeout    time.Duration        `starlark:"timeout"`
+	Command    []string           `starlark:"command"`
+	Duplicate  bool               `starlark:"duplicate"`
+	Enable     bool               `starlark:"enable"`
+	Env        denv.Env           `starlark:"-"`
+	Jitter     time.Duration      `starlark:"jitter"`
+	Log        bool               `starlark:"log"`
+	Name       string             `starlark:"-"`
+	Notify     notifyMode         `starlark:"-"`
+	OnComplete func(CompletedJob) `starlark:"-"`
+	Queue      string             `starlark:"queue"`
+	ShouldRun  starlark.Value     `starlark:"should_run"`
+	Stderr     io.Writer          `starlark:"-"`
+	Stdout     io.Writer          `starlark:"-"`
+	Timeout    time.Duration      `starlark:"timeout"`
 }
 
 func (j JobConfig) QueueName() string {
@@ -53,39 +53,39 @@ func (j JobConfig) shouldRun(t time.Time, lastCompleted *CompletedJob) (bool, er
 	}
 
 	kvpairs := []starlark.Tuple{
-		starlark.Tuple{
+		{
 			starlark.String("minute"),
 			starlark.MakeInt(t.Minute()),
 		},
-		starlark.Tuple{
+		{
 			starlark.String("hour"),
 			starlark.MakeInt(t.Hour()),
 		},
-		starlark.Tuple{
+		{
 			starlark.String("day"),
 			starlark.MakeInt(t.Day()),
 		},
-		starlark.Tuple{
+		{
 			starlark.String("month"),
 			starlark.MakeInt(int(t.Month())),
 		},
-		starlark.Tuple{
+		{
 			starlark.String("dow"),
 			starlark.MakeInt(int(t.Weekday())),
 		},
-		starlark.Tuple{
+		{
 			starlark.String("timestamp"),
 			starlark.MakeInt(int(t.Unix())),
 		},
-		starlark.Tuple{
+		{
 			starlark.String("exit_status"),
 			starlark.MakeInt(exitStatus),
 		},
-		starlark.Tuple{
+		{
 			starlark.String("finished"),
 			starlark.MakeInt(finished),
 		},
-		starlark.Tuple{
+		{
 			starlark.String("started"),
 			starlark.MakeInt(started),
 		},

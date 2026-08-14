@@ -33,7 +33,6 @@ const (
 	oneDayVar     = "one_day"
 	oneHourVar    = "one_hour"
 	oneMinuteVar  = "one_minute"
-	shouldRunVar  = "should_run"
 
 	redactedValue = "[redacted]"
 	secretRegexp  = "(?i)(key|password|secret|token|session|clientid|passphrase|passwd)"

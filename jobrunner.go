@@ -236,7 +236,7 @@ func (r jobRunner) run() {
 		names := []string{}
 
 		r.mu.Lock()
-		for queueName, _ := range r.queues {
+		for queueName := range r.queues {
 			names = append(names, queueName)
 		}
 		r.mu.Unlock()
@@ -277,7 +277,7 @@ func (r jobRunner) summarize() string {
 
 func runCommand(jobName string, env denv.Env, dir string, cmd []string, timeout time.Duration, stdin io.Reader, stdout, stderr io.Writer) error {
 	if len(cmd) == 0 {
-		return fmt.Errorf("empty command")
+		return fmt.Errorf(jobName + ": empty command")
 	}
 
 	ctx := context.Background()
