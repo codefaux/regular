@@ -10,11 +10,28 @@ import (
 )
 
 const (
+	jobNameText     = "Job Name: %v\n\n"
+	startedAtText   = "Started at: %v\n"
+	endedAtText     = "Ended at: %v\n"
+	durationText    = "Duration was: %v\n\n"
 	exitMessageText = "Exit message: %v\n\n"
-	exitStatusText  = "Exit status: %v\n\n"
-	failureSubject  = "Job %q failed"
-	successSubject  = "Job %q succeeded"
+	exitCodeText    = "Exit code: %d\n"
 )
+
+var subjectMessage = map[bool]string{
+	true:  "Job '%q' succeeded",
+	false: "Job '%q' failed",
+}
+
+var forcedMessage = map[bool]string{
+	true:  "Job run was forced by user.\n",
+	false: "Job run was scheduled.\n",
+}
+
+var failedMessage = map[bool]string{
+	true:  "Job run failed.\n",
+	false: "Job did not explicitly fail.\n",
+}
 
 type notifyMode string
 
@@ -110,36 +127,39 @@ func notifyUserByEmail(db *appDB) notifyWhenDone {
 }
 
 func formatMessage(db *appDB, jobName string, completed CompletedJob) (string, string, error) {
-	subjectTemplate := successSubject
-	if completed.ConsiderFailed() {
-		subjectTemplate = failureSubject
-	}
-	subject := fmt.Sprintf(subjectTemplate, jobName)
+	subject := fmt.Sprintf(subjectMessage[!completed.ConsiderFailed()], jobName)
 
 	var sb strings.Builder
-	if completed.ExitMessage != "" {
-		sb.WriteString(fmt.Sprintf(exitMessageText, completed.ExitMessage))
-	} else if completed.ExitCode != 0 {
-		sb.WriteString(fmt.Sprintf(exitStatusText, completed.ExitCode))
-	}
-
 	if db != nil {
+		fmt.Fprintf(&sb, jobNameText, jobName)
+		fmt.Fprintf(&sb, startedAtText, completed.Started.String())
+		fmt.Fprintf(&sb, endedAtText, completed.Finished.String())
+		fmt.Fprintf(&sb, durationText, completed.Finished.Sub(completed.Started).String())
+
+		fmt.Fprintf(&sb, exitCodeText, completed.ExitCode)
+		fmt.Fprintf(&sb, exitMessageText, completed.ExitMessage)
+
+		sb.WriteString(failedMessage[completed.ConsiderFailed()])
+		sb.WriteString(forcedMessage[completed.WasForced])
+
+		sb.WriteString("\n")
+
 		for _, logName := range []string{"stdout", "stderr"} {
-			lines, err := db.getJobLogs(jobName, logName, defaultLogLines)
+			logLines, err := db.getJobLogs(jobName, logName, defaultLogLines)
 			if err != nil {
 				return "", "", fmt.Errorf("error reading log: %w", err)
 			}
 
-			if len(lines) == 0 {
+			if len(logLines) == 0 {
 				continue
 			}
 
 			sb.WriteString(logName)
 			sb.WriteString(":\n")
 
-			for _, line := range lines {
+			for _, logLine := range logLines {
 				sb.WriteString("> ")
-				sb.WriteString(line)
+				sb.WriteString(logLine)
 				sb.WriteString("\n")
 			}
 		}
