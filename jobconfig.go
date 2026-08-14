@@ -13,6 +13,17 @@ import (
 	"dbohdan.com/regular/starlarkutil"
 )
 
+type AttachMode string
+
+const (
+	AttachAlways  AttachMode = "Always"
+	AttachLong    AttachMode = "Long"
+	AttachFail    AttachMode = "Fail"
+	AttachWarning AttachMode = "Warning"
+	AttachSuccess AttachMode = "Success"
+	AttachNever   AttachMode = "Never"
+)
+
 type JobConfig struct {
 	Command       []string           `starlark:"command"`
 	Duplicate     bool               `starlark:"duplicate"`
@@ -23,6 +34,7 @@ type JobConfig struct {
 	Name          string             `starlark:"-"`
 	Notify        notifyMode         `starlark:"-"`
 	OnComplete    func(CompletedJob) `starlark:"-"`
+	AttachLogs    AttachMode         `starlark:"attach_logs"`
 	Force         bool               `starlark:"-"`
 	Queue         string             `starlark:"queue"`
 	ShouldRun     starlark.Value     `starlark:"should_run"`
