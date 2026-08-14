@@ -25,10 +25,10 @@ func TestJobRunnerDB(t *testing.T) {
 	jobName := "test-job"
 	now := time.Now()
 	completed := CompletedJob{
-		Error:      "test error",
-		ExitStatus: 1,
-		Started:    now.Add(-time.Minute),
-		Finished:   now,
+		ExitMessage: "test error",
+		ExitCode:    1,
+		Started:     now.Add(-time.Minute),
+		Finished:    now,
 	}
 
 	// Create test log files.
@@ -67,12 +67,12 @@ func TestJobRunnerDB(t *testing.T) {
 		t.Fatal("Expected last completed job, got nil")
 	}
 
-	if lastCompleted.Error != completed.Error {
-		t.Errorf("Expected error %q, got %q", completed.Error, lastCompleted.Error)
+	if lastCompleted.ExitMessage != completed.ExitMessage {
+		t.Errorf("Expected error %q, got %q", completed.ExitMessage, lastCompleted.ExitMessage)
 	}
 
-	if lastCompleted.ExitStatus != completed.ExitStatus {
-		t.Errorf("Expected exit status %d, got %d", completed.ExitStatus, lastCompleted.ExitStatus)
+	if lastCompleted.ExitCode != completed.ExitCode {
+		t.Errorf("Expected exit status %d, got %d", completed.ExitCode, lastCompleted.ExitCode)
 	}
 
 	// Test getJobLogs.

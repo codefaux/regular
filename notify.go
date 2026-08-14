@@ -10,10 +10,10 @@ import (
 )
 
 const (
-	errorText      = "Error: %v\n\n"
-	exitStatusText = "Exit status: %v\n\n"
-	failureSubject = "Job %q failed"
-	successSubject = "Job %q succeeded"
+	exitMessageText = "Exit message: %v\n\n"
+	exitStatusText  = "Exit status: %v\n\n"
+	failureSubject  = "Job %q failed"
+	successSubject  = "Job %q succeeded"
 )
 
 type notifyMode string
@@ -107,10 +107,10 @@ func formatMessage(db *appDB, jobName string, completed CompletedJob) (string, s
 	subject := fmt.Sprintf(subjectTemplate, jobName)
 
 	var sb strings.Builder
-	if completed.Error != "" {
-		sb.WriteString(fmt.Sprintf(errorText, completed.Error))
-	} else if completed.ExitStatus != 0 {
-		sb.WriteString(fmt.Sprintf(exitStatusText, completed.ExitStatus))
+	if completed.ExitMessage != "" {
+		sb.WriteString(fmt.Sprintf(exitMessageText, completed.ExitMessage))
+	} else if completed.ExitCode != 0 {
+		sb.WriteString(fmt.Sprintf(exitStatusText, completed.ExitCode))
 	}
 
 	if db != nil {

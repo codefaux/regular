@@ -127,7 +127,7 @@ func (s *StatusCmd) Run(config Config) error {
 		} else {
 			fmt.Println("    last started: ", completed.Started.Format(timestampFormat))
 			fmt.Println("    last finished:", completed.Finished.Format(timestampFormat))
-			fmt.Println("    exit status:", completed.ExitStatus)
+			fmt.Println("    exit status:", completed.ExitCode)
 		}
 
 		fmt.Println("    logs:")

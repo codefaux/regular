@@ -47,7 +47,7 @@ func (j JobConfig) shouldRun(t time.Time, lastCompleted *CompletedJob) (bool, er
 	finished := -1
 	started := -1
 	if lastCompleted != nil {
-		exitStatus = lastCompleted.ExitStatus
+		exitStatus = lastCompleted.ExitCode
 		finished = int(lastCompleted.Finished.Unix())
 		started = int(lastCompleted.Started.Unix())
 	}

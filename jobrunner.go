@@ -172,13 +172,13 @@ func (r jobRunner) runQueueHead(queueName string) error {
 		return runCommand(job.Name, job.Env, jobDir, job.Command, job.Timeout, nil, stdoutFile, stderrFile)
 	}()
 
-	cj.Error = ""
+	cj.ExitMessage = ""
 	if runErr != nil {
-		cj.Error = runErr.Error()
+		cj.ExitMessage = runErr.Error()
 	}
 	var exitErr *exec.ExitError
 	if errors.As(runErr, &exitErr) {
-		cj.ExitStatus = exitErr.ExitCode()
+		cj.ExitCode = exitErr.ExitCode()
 	}
 
 	logJobPrintf(job.Name, "Finished")

@@ -48,37 +48,37 @@ func TestNotifyIfNeeded(t *testing.T) {
 		{
 			name:         "always mode success",
 			mode:         notifyAlways,
-			job:          CompletedJob{ExitStatus: 0},
+			job:          CompletedJob{ExitCode: 0},
 			shouldNotify: true,
 		},
 		{
 			name:         "always mode failure",
 			mode:         notifyAlways,
-			job:          CompletedJob{ExitStatus: 1},
+			job:          CompletedJob{ExitCode: 1},
 			shouldNotify: true,
 		},
 		{
 			name:         "never mode success",
 			mode:         notifyNever,
-			job:          CompletedJob{ExitStatus: 0},
+			job:          CompletedJob{ExitCode: 0},
 			shouldNotify: false,
 		},
 		{
 			name:         "never mode failure",
 			mode:         notifyNever,
-			job:          CompletedJob{ExitStatus: 1},
+			job:          CompletedJob{ExitCode: 1},
 			shouldNotify: false,
 		},
 		{
 			name:         "on-failure mode success",
 			mode:         notifyOnFailure,
-			job:          CompletedJob{ExitStatus: 0},
+			job:          CompletedJob{ExitCode: 0},
 			shouldNotify: false,
 		},
 		{
 			name:         "on-failure mode failure",
 			mode:         notifyOnFailure,
-			job:          CompletedJob{ExitStatus: 1},
+			job:          CompletedJob{ExitCode: 1},
 			shouldNotify: true,
 		},
 	}
@@ -107,21 +107,21 @@ func TestFormatMessage(t *testing.T) {
 	}{
 		{
 			name:        "success case",
-			job:         CompletedJob{ExitStatus: 0},
+			job:         CompletedJob{ExitCode: 0},
 			wantSubject: `Job "test-job" succeeded`,
 			wantBody:    "",
 			wantError:   false,
 		},
 		{
 			name:        "failure with exit status",
-			job:         CompletedJob{ExitStatus: 1},
+			job:         CompletedJob{ExitCode: 1},
 			wantSubject: `Job "test-job" failed`,
 			wantBody:    "Exit status: 1\n\n",
 			wantError:   false,
 		},
 		{
 			name:        "failure with error message",
-			job:         CompletedJob{Error: "test error"},
+			job:         CompletedJob{ExitMessage: "test error"},
 			wantSubject: `Job "test-job" failed`,
 			wantBody:    "Error: test error\n\n",
 			wantError:   false,

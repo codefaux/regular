@@ -117,8 +117,8 @@ func TestJobRunner(t *testing.T) {
 			t.Error("Expected completed job record, got nil")
 			return
 		}
-		if completed.ExitStatus != 2 {
-			t.Errorf("Expected exit status 2, got %d", completed.ExitStatus)
+		if completed.ExitCode != 2 {
+			t.Errorf("Expected exit status 2, got %d", completed.ExitCode)
 		}
 	})
 
@@ -159,8 +159,8 @@ func TestJobRunner(t *testing.T) {
 		if !called {
 			t.Error("OnComplete was not invoked")
 		}
-		if done.ExitStatus != 0 {
-			t.Errorf("OnComplete saw exit %d, want 0", done.ExitStatus)
+		if done.ExitCode != 0 {
+			t.Errorf("OnComplete saw exit %d, want 0", done.ExitCode)
 		}
 	})
 }

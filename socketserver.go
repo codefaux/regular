@@ -133,9 +133,9 @@ func runOverSocket(jsc *jobScheduler, runner jobRunner, sender *frameSender, req
 	}
 
 	cj := <-done
-	exitCode := cj.ExitStatus
-	if cj.Error != "" && exitCode == 0 {
+	exitCode := cj.ExitCode
+	if cj.ExitMessage != "" && exitCode == 0 {
 		exitCode = exitError
 	}
-	sendExit(exitCode, cj.Error)
+	sendExit(exitCode, cj.ExitMessage)
 }

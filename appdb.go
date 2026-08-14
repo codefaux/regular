@@ -316,8 +316,8 @@ func (c *appDB) saveCompletedJob(jobName string, completed CompletedJob, logs []
 			finished
 		) VALUES (?, ?, ?, ?, ?)`,
 		jobName,
-		completed.Error,
-		completed.ExitStatus,
+		completed.ExitMessage,
+		completed.ExitCode,
 		completed.Started,
 		completed.Finished,
 	)
@@ -395,8 +395,8 @@ func (c *appDB) getLastCompleted(jobName string) (*CompletedJob, error) {
 		ORDER BY id DESC LIMIT 1`,
 		jobName,
 	).Scan(
-		&completed.Error,
-		&completed.ExitStatus,
+		&completed.ExitMessage,
+		&completed.ExitCode,
 		&completed.Started,
 		&completed.Finished,
 	)
