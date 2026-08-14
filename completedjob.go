@@ -5,10 +5,11 @@ import (
 )
 
 type CompletedJob struct {
-	ExitMessage string
-	ExitCode    int
-	Started     time.Time
-	Finished    time.Time
+	ExitMessage   string
+	ExitCode      int
+	Started       time.Time
+	Finished      time.Time
+	WasForced     bool
 }
 
 func (cj CompletedJob) IsSuccess() bool {
