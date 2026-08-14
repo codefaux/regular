@@ -26,7 +26,7 @@ func (cj CompletedJob) ConsiderFailed() bool {
 	}
 
 	if (cj.SuccessIsCode == nil) && (cj.ErrorIsCode == nil) {
-		return cj.ExitCode == 0 && cj.ExitMessage == ""
+		return !(cj.ExitCode == 0 || cj.ExitMessage == "")
 	} else {
 		return false
 	}
