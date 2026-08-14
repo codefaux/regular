@@ -36,6 +36,9 @@ type JobConfig struct {
 	OnComplete    func(CompletedJob) `starlark:"-"`
 	AttachLogs    AttachMode         `starlark:"attach_logs"`
 	Force         bool               `starlark:"-"`
+	ErrorIsCode   *int               `starlark:"exit_is_error"`
+	WarningIsCode *int               `starlark:"exit_is_warning"`
+	SuccessIsCode *int               `starlark:"exit_is_success"`
 	Queue         string             `starlark:"queue"`
 	ShouldRun     starlark.Value     `starlark:"should_run"`
 	Stderr        io.Writer          `starlark:"-"`
