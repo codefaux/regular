@@ -51,8 +51,8 @@ const (
 	runInterval      = time.Second
 	scheduleInterval = time.Minute
 
-	defaultLogLines  = 1000
-	maxLogBufferSize = 256 * 1024
+	defaultLogLines  = 20
+	maxLogBufferSize = 1024 * 1024
 )
 
 var (
