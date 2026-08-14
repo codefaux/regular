@@ -40,11 +40,7 @@ func parseNotifyMode(mode string) (notifyMode, error) {
 }
 
 func notifyIfNeeded(notify notifyWhenDone, mode notifyMode, jobName string, completed CompletedJob) error {
-	if mode == notifyNever {
-		return nil
-	}
-
-	if !(mode == notifyAlways || mode == notifyOnFailure && !completed.IsSuccess()) {
+	if (mode == notifyNever) || !(mode == notifyAlways || (mode == notifyOnFailure && completed.ConsiderFailed())) {
 		return nil
 	}
 
@@ -115,7 +111,7 @@ func notifyUserByEmail(db *appDB) notifyWhenDone {
 
 func formatMessage(db *appDB, jobName string, completed CompletedJob) (string, string, error) {
 	subjectTemplate := successSubject
-	if !completed.IsSuccess() {
+	if completed.ConsiderFailed() {
 		subjectTemplate = failureSubject
 	}
 	subject := fmt.Sprintf(subjectTemplate, jobName)
