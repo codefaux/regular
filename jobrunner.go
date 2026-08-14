@@ -129,6 +129,7 @@ func (r jobRunner) runQueueHead(queueName string) error {
 
 	cj := CompletedJob{}
 	cj.Started = time.Now()
+	cj.AttachLogs = job.AttachLogs
 	logJobPrintf(job.Name, "Started")
 
 	stdoutFilePath := filepath.Join(jobLogDir, stdoutFileName)
