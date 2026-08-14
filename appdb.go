@@ -230,7 +230,7 @@ func createSchema(db *sql.DB, version int) error {
 	return nil
 }
 
-func (c *appDB) saveCredentials(sendto string, user string, server string, port int) error {
+func (c *appDB) saveCredentials(creds *credentials) error {
 	tx, err := c.db.Begin()
 	if err != nil {
 		return err
@@ -241,13 +241,13 @@ func (c *appDB) saveCredentials(sendto string, user string, server string, port 
 
 	result, err := tx.Exec(`
 		INSERT INTO credentials (id, server, user, port, sendto)
-		VALUES (1, ?, ?, ?)
+		VALUES (1, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
 			server = excluded.server,
 			user = excluded.user,
 			port = excluded.port,
 			sendto = excluded.sendto
-	`, server, user, port, sendto)
+	`, creds.Server, creds.User, creds.Port, creds.SendTo)
 
 	if err != nil {
 		return err
