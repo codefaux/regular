@@ -91,6 +91,20 @@ func notifyUserByEmail(db *appDB) notifyWhenDone {
 			SetSubject(subject).
 			SetBody(mail.TextPlain, text)
 
+		if completed.AttachLogs != AttachNever {
+			stdout_log, stderr_log, err := getLogsForAttachment(db, jobName)
+			if err == nil {
+				if len(stdout_log.Data) > 1 {
+					email.Attach(&stdout_log)
+				}
+				if len(stderr_log.Data) > 1 {
+					email.Attach(&stderr_log)
+				}
+			} else {
+				fmt.Printf("Error reading job logs for attachment: %s", jobName)
+			}
+		}
+
 		if err := email.Send(mailer); err != nil {
 			return fmt.Errorf("failed to send email: %v\n", err)
 		}
@@ -136,4 +150,31 @@ func formatMessage(db *appDB, jobName string, completed CompletedJob) (string, s
 	}
 
 	return subject, sb.String(), nil
+}
+
+func getLogsForAttachment(db *appDB, jobName string) (mail.File, mail.File, error) {
+	var lines_out, lines_err []string
+	var err error
+
+	lines_out, err = db.getJobLogs(jobName, "stdout", -1)
+	if err != nil {
+		return mail.File{}, mail.File{}, fmt.Errorf("error reading log: %w", err)
+	}
+
+	lines_err, err = db.getJobLogs(jobName, "stderr", -1)
+	if err != nil {
+		return mail.File{}, mail.File{}, fmt.Errorf("error reading log: %w", err)
+	}
+
+	return mail.File{
+			Name:     "stdout.log",
+			MimeType: "text/plain",
+			Data:     []byte(strings.Join(lines_out, "\n") + "\n"),
+		},
+		mail.File{
+			Name:     "stderr.log",
+			MimeType: "text/plain",
+			Data:     []byte(strings.Join(lines_err, "\n") + "\n"),
+		},
+		nil
 }
