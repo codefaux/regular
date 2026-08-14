@@ -34,10 +34,11 @@ type StatusCmd struct {
 
 type CredentialsCmd struct {
 	Store         bool   `help:"Store credentials to app state"`
-	SMTPUsername  string `help:"SMTP Username to show credentials for"`
-	SMTPHostname  string `help:"SMTP Hostname to show credentials for"`
-	SMTPPort      int    `help:"SMTP Port to show credentials for"`
-	LocalHostname string `help:"Local Hostname to show credentials for"`
+	User          string `help:"SMTP Username to show or store"`
+	Server        string `help:"SMTP Hostname/IP to show or store"`
+	Port          int    `help:"SMTP Port to show or store"`
+	SendTo        string `help:"SMTP Address to send (Only useful with --store)"`
+	LocalHostname string `help:"Local Hostname to show or store"`
 }
 
 type CLI struct {
