@@ -66,7 +66,7 @@ func (c *CredentialsCmd) Run(config Config) error {
 			return fmt.Errorf("Error writing credentials to database: %v", err)
 		}
 
-		fmt.Print("Credentials stored.")
+		fmt.Println("Credentials stored.\n ")
 	}
 
 	return nil
