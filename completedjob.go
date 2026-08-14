@@ -10,6 +10,7 @@ type CompletedJob struct {
 	Started       time.Time
 	Finished      time.Time
 	WasForced     bool
+	AttachLogs    AttachMode
 }
 
 func (cj CompletedJob) IsSuccess() bool {
