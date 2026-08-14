@@ -33,7 +33,7 @@ type StatusCmd struct {
 }
 
 type CredentialsCmd struct {
-	Store         bool   `help:"Store credentials to app state"`
+	Store         bool   `help:"Store credentials to app state" aliases:"write"`
 	User          string `help:"SMTP Username to show or store"`
 	Server        string `help:"SMTP Hostname/IP to show or store"`
 	Port          int    `help:"SMTP Port to show or store"`
@@ -43,7 +43,7 @@ type CredentialsCmd struct {
 
 type CLI struct {
 	List   ListCmd        `cmd:"" help:"List available jobs"`
-	Log    LogCmd         `cmd:"" help:"Show application log"`
+	Log    LogCmd         `cmd:"" help:"Show application log" aliases:"logs"`
 	Run    RunCmd         `cmd:"" help:"Run jobs once"`
 	Start  StartCmd       `cmd:"" help:"Start scheduler"`
 	Status StatusCmd      `cmd:"" help:"Show job status"`
