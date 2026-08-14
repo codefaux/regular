@@ -56,11 +56,17 @@ func (c *CredentialsCmd) Run(config Config) error {
 	fmt.Printf("password: %s\n\n", GenerateCredential(useHostname, useUser, useServer, usePort))
 
 	if c.Store {
+		creds.Port = usePort
+		creds.User = useUser
+		creds.Server = useServer
+		creds.SendTo = useSendTo
+
 		err := db.saveCredentials(creds)
 		if err != nil {
 			return fmt.Errorf("Error writing credentials to database: %v", err)
 		}
 
+		fmt.Print("Credentials stored.")
 	}
 
 	return nil
