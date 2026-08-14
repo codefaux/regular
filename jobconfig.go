@@ -25,25 +25,26 @@ const (
 )
 
 type JobConfig struct {
-	Command       []string           `starlark:"command"`
-	Duplicate     bool               `starlark:"duplicate"`
-	Enable        bool               `starlark:"enable"`
-	Env           denv.Env           `starlark:"-"`
-	Jitter        time.Duration      `starlark:"jitter"`
-	Log           bool               `starlark:"log"`
-	Name          string             `starlark:"-"`
-	Notify        notifyMode         `starlark:"-"`
-	OnComplete    func(CompletedJob) `starlark:"-"`
-	AttachLogs    AttachMode         `starlark:"attach_logs"`
-	Force         bool               `starlark:"-"`
-	ErrorIsCode   *int               `starlark:"exit_is_error"`
-	WarningIsCode *int               `starlark:"exit_is_warning"`
-	SuccessIsCode *int               `starlark:"exit_is_success"`
-	Queue         string             `starlark:"queue"`
-	ShouldRun     starlark.Value     `starlark:"should_run"`
-	Stderr        io.Writer          `starlark:"-"`
-	Stdout        io.Writer          `starlark:"-"`
-	Timeout       time.Duration      `starlark:"timeout"`
+	Command          []string           `starlark:"command"`
+	Duplicate        bool               `starlark:"duplicate"`
+	Enable           bool               `starlark:"enable"`
+	Env              denv.Env           `starlark:"-"`
+	Jitter           time.Duration      `starlark:"jitter"`
+	Log              bool               `starlark:"log"`
+	Name             string             `starlark:"-"`
+	Notify           notifyMode         `starlark:"-"`
+	OnComplete       func(CompletedJob) `starlark:"-"`
+	AttachLogs       AttachMode         `starlark:"attach_logs"`
+	Force            bool               `starlark:"-"`
+	ErrorIsCode      *int               `starlark:"exit_is_error"`
+	WarningIsCode    *int               `starlark:"exit_is_warning"`
+	SuccessIsCode    *int               `starlark:"exit_is_success"`
+	WarningIsFailure *bool              `starlark:"warning_is_failure"`
+	Queue            string             `starlark:"queue"`
+	ShouldRun        starlark.Value     `starlark:"should_run"`
+	Stderr           io.Writer          `starlark:"-"`
+	Stdout           io.Writer          `starlark:"-"`
+	Timeout          time.Duration      `starlark:"timeout"`
 }
 
 func (j JobConfig) QueueName() string {
