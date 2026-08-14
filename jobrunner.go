@@ -118,9 +118,13 @@ func (r jobRunner) runQueueHead(queueName string) error {
 
 	if job.Jitter > 0 {
 		sleepDuration := time.Duration(job.Jitter.Seconds()*rand.Float64()) * time.Second
-		logJobPrintf(job.Name, "Waiting %v before start", formatDuration(sleepDuration))
+		if !job.Force {
+			logJobPrintf(job.Name, "Waiting %v before start", formatDuration(sleepDuration))
 
-		time.Sleep(sleepDuration)
+			time.Sleep(sleepDuration)
+		} else {
+			logJobPrintf(job.Name, "Job run forced. Skipping configured jitter of %v.", formatDuration(sleepDuration))
+		}
 	}
 
 	cj := CompletedJob{}
