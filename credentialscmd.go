@@ -47,15 +47,16 @@ func (c *CredentialsCmd) Run(config Config) error {
 	creds := getCredentials(db.db)
 
 	useHostname := coalesce(c.LocalHostname, detectHostname)
-	useUser := coalesce(c.SMTPUsername, creds.User)
-	useServer := coalesce(c.SMTPHostname, creds.Server)
-	usePort := coalesce(c.SMTPPort, creds.Port)
+	useUser := coalesce(c.User, creds.User)
+	useServer := coalesce(c.Server, creds.Server)
+	usePort := coalesce(c.Port, creds.Port)
+	useSendTo := coalesce(c.SendTo, creds.SendTo)
 
-	fmt.Printf("Generating:   hostname '%s'   user '%s'   server '%s'   port '%d'\n", useHostname, useUser, useServer, usePort)
+	fmt.Printf("Generating:   hostname '%s'   user '%s'   server '%s'   port '%d'   to '%s'\n", useHostname, useUser, useServer, usePort, useSendTo)
 	fmt.Printf("password: %s\n\n", GenerateCredential(useHostname, useUser, useServer, usePort))
 
 	if c.Store {
-		err := db.saveCredentials(creds.SendTo, creds.User, creds.Server, creds.Port)
+		err := db.saveCredentials(creds)
 		if err != nil {
 			return fmt.Errorf("Error writing credentials to database: %v", err)
 		}
