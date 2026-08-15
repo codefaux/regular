@@ -136,10 +136,10 @@ func (r *RunCmd) runStandalone(config Config) error {
 			logJobPrintf(jobNameFromPath(path), "Error loading job: %v", err)
 			return nil
 		}
+		job.Force = r.Force
 
 		// Either force-run or check should_run.
 		if r.Force {
-			job.Force = true
 			runner.addJob(*job)
 		} else {
 			if err := job.addToQueueIfDue(runner, now); err != nil {

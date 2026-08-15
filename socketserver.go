@@ -105,6 +105,7 @@ func runOverSocket(jsc *jobScheduler, runner jobRunner, sender *frameSender, req
 
 	// Stamp on per-request writers and a completion signal.
 	done := make(chan CompletedJob, 1)
+	job.Force = req.Force
 	job.Stdout = newFrameWriter(sender, frameStdout)
 	job.Stderr = newFrameWriter(sender, frameStderr)
 	job.OnComplete = func(cj CompletedJob) {
